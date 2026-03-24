@@ -4,6 +4,8 @@ import { ArrowLeft, Mic, MicOff, Play, Pause, RotateCcw, AlertCircle } from 'luc
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AudioPlayer } from '@/components/AudioPlayer';
+import { ToastContainer } from '@/components/ui/toast';
+import { useToast } from '@/hooks/useToast';
 import { useTaskStore } from '@/stores/taskStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { aiService } from '@/services/aiService';
@@ -19,6 +21,7 @@ export function PracticePage() {
   const recordPractice = useProgressStore((state) => state.recordPractice);
   const recordPassed = useProgressStore((state) => state.recordPassed);
   const checkAndUnlockAchievements = useProgressStore((state) => state.checkAndUnlockAchievements);
+  const { toasts, addToast, removeToast } = useToast();
 
   const task = tasks.find((t) => t.id === id);
 
@@ -79,7 +82,7 @@ export function PracticePage() {
       }, 1000);
     } catch (error) {
       console.error('开始录音失败:', error);
-      alert('无法访问麦克风，请检查权限设置');
+      addToast(error.message || '无法访问麦克风，请检查权限设置', 'error');
     }
   };
 
@@ -93,6 +96,7 @@ export function PracticePage() {
       clearInterval(timerRef.current);
     } catch (error) {
       console.error('停止录音失败:', error);
+      addToast(error.message || '录音失败，请重试', 'error');
       setIsRecording(false);
       clearInterval(timerRef.current);
     }
@@ -198,6 +202,8 @@ export function PracticePage() {
 
   return (
     <div className="container py-8 px-4 max-w-2xl mx-auto space-y-6">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
           <ArrowLeft className="h-5 w-5" />
